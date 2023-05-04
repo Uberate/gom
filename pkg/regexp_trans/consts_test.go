@@ -1,8 +1,10 @@
 package regexp_trans
 
 import (
+	"math/rand"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestMergeCharRangeArray(t *testing.T) {
@@ -360,4 +362,43 @@ func TestMergeCharRangeArray(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRandomRangeChar(t *testing.T) {
+	defaultRan := rand.New(rand.NewSource(time.Now().UnixNano()))
+	type args struct {
+		ran         *rand.Rand
+		charClasses CharRangeArray
+		count       int
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{name: "1. common", args: args{ran: defaultRan, charClasses: CharClassRangeAllLetters, count: 100}},
+		{name: "2. numbers", args: args{ran: defaultRan, charClasses: CharClassRangeNumbers, count: 100}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := RandomRangeChar(defaultRan, tt.args.charClasses, tt.args.count)
+			if len(got) != tt.args.count {
+				t.Errorf("want count: %d, but: %d", tt.args.count, len(got))
+			}
+			for _, item := range got {
+				if !isRuneInSlice(item, tt.args.charClasses) {
+					t.Errorf("got [%v] not in slice: [%v]", item, tt.args.charClasses)
+				}
+			}
+		})
+	}
+}
+
+func isRuneInSlice(r rune, sli CharRangeArray) bool {
+	for _, item := range sli {
+		if r >= item[0] && r <= item[1] {
+			return true
+		}
+	}
+
+	return false
 }

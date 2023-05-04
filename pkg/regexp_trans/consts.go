@@ -1,20 +1,32 @@
 package regexp_trans
 
-import "sort"
+import (
+	"math/rand"
+	"sort"
+)
 
 type CharRange [2]rune
 type CharRangeArray []CharRange
 
 var (
-	CharClassRangeNumbers      = []CharRange{[2]rune{'0', '9'}}
-	CharClassRangeLowerLetters = []CharRange{[2]rune{'a', 'z'}}
-	CharClassRangeUpperLetters = []CharRange{[2]rune{'A', 'Z'}}
+	CharClassRangeNumbers           = []CharRange{[2]rune{'0', '9'}}
+	CharClassRangeLowerLetters      = []CharRange{[2]rune{'a', 'z'}}
+	CharClassRangeUpperLetters      = []CharRange{[2]rune{'A', 'Z'}}
+	CharClassRangeAllLetters        = MergeCharRangeArray(CharClassRangeLowerLetters, CharClassRangeUpperLetters)
+	CharClassRangeLettersAndNumbers = MergeCharRangeArray(CharClassRangeAllLetters, CharClassRangeNumbers)
 )
 
-func MergeCharRangeArray(a, b CharRangeArray) CharRangeArray {
+func MergeCharRangeArray(a CharRangeArray, b ...CharRangeArray) CharRangeArray {
 
 	if len(a) == 0 {
-		return b
+		if len(b) == 0 {
+			return CharRangeArray{}
+		} else {
+			if len(b) == 1 {
+				return b[0]
+			}
+			return MergeCharRangeArray(b[0], b[1:]...)
+		}
 	}
 
 	if len(b) == 0 {
@@ -22,36 +34,43 @@ func MergeCharRangeArray(a, b CharRangeArray) CharRangeArray {
 	}
 
 	// may be need big memory
-	mergeAB := append(a, b...)
-	sort.Slice(mergeAB, func(i, j int) bool {
-		if mergeAB[i][0] < mergeAB[j][0] {
+	merges := a[:]
+	for _, bItem := range b {
+		merges = append(merges, bItem...)
+	}
+
+	// sort slice: merges
+	sort.Slice(merges, func(i, j int) bool {
+		if merges[i][0] < merges[j][0] {
 			return true
-		} else if mergeAB[i][0] == mergeAB[j][0] {
-			return mergeAB[i][1] < mergeAB[j][1]
+		} else if merges[i][0] == merges[j][0] {
+			return merges[i][1] < merges[j][1]
 		}
 		return false
 	})
 
+	// merge A and B...
 	res := CharRangeArray{}
-	for index, resIndex := 0, 0; index < len(mergeAB); index++ {
+	for index, resIndex := 0, 0; index < len(merges); index++ {
 		if len(res) == 0 {
-			res = append(res, mergeAB[0])
+			res = append(res, merges[0])
 			continue
 		}
 
-		if res[resIndex][1] >= mergeAB[index][1] && res[resIndex][0] <= mergeAB[index][0] {
+		if res[resIndex][1] >= merges[index][1] && res[resIndex][0] <= merges[index][0] {
 			continue
 		}
 
-		if res[resIndex][1] >= mergeAB[index][0] {
-			res[resIndex][1] = mergeAB[index][1]
+		if res[resIndex][1] >= merges[index][0] {
+			res[resIndex][1] = merges[index][1]
 			continue
 		}
 
-		res = append(res, mergeAB[index])
+		res = append(res, merges[index])
 		resIndex++
 	}
 
+	// compress res
 	compressRes := CharRangeArray{}
 	compressResIndex := 0
 	for index := range res {
@@ -69,4 +88,16 @@ func MergeCharRangeArray(a, b CharRangeArray) CharRangeArray {
 	}
 
 	return compressRes
+}
+
+func RandomRangeChar(ran *rand.Rand, charClasses CharRangeArray, count int) []rune {
+	res := make([]rune, count, count)
+
+	for index := 0; index < count; index++ {
+		sliceRandIndex := ran.Intn(len(charClasses))
+		length := charClasses[sliceRandIndex][1] - charClasses[sliceRandIndex][0] + 1
+		res[index] = charClasses[sliceRandIndex][0] + int32(ran.Int63n(int64(length)))
+	}
+
+	return res
 }
