@@ -1,6 +1,7 @@
 package regexp_trans
 
 import (
+	"fmt"
 	"math/rand"
 	"sort"
 )
@@ -16,6 +17,7 @@ var (
 	CharClassRangeLettersAndNumbers = MergeCharRangeArray(CharClassRangeAllLetters, CharClassRangeNumbers)
 )
 
+// MergeCharRangeArray return a CharRangeArray, merged the at latest one slice.
 func MergeCharRangeArray(a CharRangeArray, b ...CharRangeArray) CharRangeArray {
 
 	if len(a) == 0 {
@@ -90,6 +92,7 @@ func MergeCharRangeArray(a CharRangeArray, b ...CharRangeArray) CharRangeArray {
 	return compressRes
 }
 
+// RandomRangeChar will generate specif count char in a range.
 func RandomRangeChar(ran *rand.Rand, charClasses CharRangeArray, count int) []rune {
 	res := make([]rune, count, count)
 
@@ -100,4 +103,17 @@ func RandomRangeChar(ran *rand.Rand, charClasses CharRangeArray, count int) []ru
 	}
 
 	return res
+}
+
+// ParseCharRangeArray to CharRangeArray from a runes, the rs must have even counts elements.
+func ParseCharRangeArray(rs []rune) (CharRangeArray, error) {
+	if len(rs)%2 != 0 {
+		return nil, fmt.Errorf("char range shoud an even number, but [%d]", len(rs))
+	}
+
+	res := CharRangeArray{}
+	for index := 0; index <= len(rs)/2; index += 2 {
+		res = append(res, [2]rune{rs[index], rs[index+1]})
+	}
+	return res, nil
 }

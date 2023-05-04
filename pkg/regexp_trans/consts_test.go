@@ -402,3 +402,31 @@ func isRuneInSlice(r rune, sli CharRangeArray) bool {
 
 	return false
 }
+
+func TestParseCharRangeArray(t *testing.T) {
+	type args struct {
+		rs []rune
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    CharRangeArray
+		wantErr bool
+	}{
+		{name: "1.common test", args: args{rs: []rune{'a', 'b'}}, want: CharRangeArray{[2]rune{'a', 'b'}}, wantErr: false},
+		{name: "2.common error", args: args{rs: []rune{'a'}}, want: nil, wantErr: true},
+		{name: "1.common test 2", args: args{rs: []rune{'a', 'b', 'c', 'd'}}, want: CharRangeArray{[2]rune{'a', 'b'}, [2]rune{'c', 'd'}}, wantErr: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseCharRangeArray(tt.args.rs)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ParseCharRangeArray() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ParseCharRangeArray() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

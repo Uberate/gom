@@ -3,10 +3,12 @@ package regexp_trans
 import (
 	"bytes"
 	"fmt"
+	"math/rand"
 	"regexp/syntax"
 )
 
 type Parser struct {
+	ran *rand.Rand
 }
 
 func (p *Parser) Parse(value string) (string, error) {
