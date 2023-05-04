@@ -9,12 +9,31 @@ import (
 type CharRange [2]rune
 type CharRangeArray []CharRange
 
+func (cr *CharRange) Clone() CharRange {
+	return [2]rune{cr[0], cr[1]}
+}
+
+func (cra *CharRangeArray) Clone() CharRangeArray {
+	value := make(CharRangeArray, len(*cra))
+	for index := range *cra {
+		value[index] = (*cra)[index].Clone()
+	}
+
+	return value
+}
+
 var (
 	CharClassRangeNumbers           = []CharRange{[2]rune{'0', '9'}}
 	CharClassRangeLowerLetters      = []CharRange{[2]rune{'a', 'z'}}
 	CharClassRangeUpperLetters      = []CharRange{[2]rune{'A', 'Z'}}
+	CharClassNewLineLetter          = []CharRange{[2]rune{'\n', '\n'}}
 	CharClassRangeAllLetters        = MergeCharRangeArray(CharClassRangeLowerLetters, CharClassRangeUpperLetters)
 	CharClassRangeLettersAndNumbers = MergeCharRangeArray(CharClassRangeAllLetters, CharClassRangeNumbers)
+
+	CharClassEmptyChars = MergeCharRangeArray(
+		CharRangeArray{[2]rune{' ', ' '}},
+		CharRangeArray{[2]rune{'\t', '\t'}},
+	)
 )
 
 // MergeCharRangeArray return a CharRangeArray, merged the at latest one slice.
@@ -36,9 +55,9 @@ func MergeCharRangeArray(a CharRangeArray, b ...CharRangeArray) CharRangeArray {
 	}
 
 	// may be need big memory
-	merges := a[:]
+	merges := a.Clone()
 	for _, bItem := range b {
-		merges = append(merges, bItem...)
+		merges = append(merges, bItem.Clone()...)
 	}
 
 	// sort slice: merges
