@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"math/rand"
 	"regexp/syntax"
-	"time"
 )
 
 type Generator struct {
@@ -13,20 +12,27 @@ type Generator struct {
 	defaultMaxRepeatCount int
 	defaultAnyCharNotNL   CharRangeArray
 	defaultAnyChar        CharRangeArray
-	defaultWordBoundary   CharRangeArray
-	defaultNoWordBoundary CharRangeArray
 }
 
-func NewGenerator() *Generator {
-	ran := rand.New(rand.NewSource(time.Now().UnixNano()))
+func NewGenerator(opts ...GeneratorOpt) *Generator {
+
+	c := &GeneratorConfig{
+		DefaultMaxRepeatCount: 10,
+		DefaultAnyCharNotNL:   CharClassRangeLettersAndNumbers,
+		DefaultAnyChar:        MergeCharRangeArray(CharClassRangeLettersAndNumbers, CharClassNewLineLetter),
+	}
+
+	for _, item := range opts {
+		item(c)
+	}
+
+	ran := rand.New(rand.NewSource(c.Seed))
 
 	return &Generator{
 		ran:                   ran,
-		defaultMaxRepeatCount: 10,
-		defaultAnyCharNotNL:   CharClassRangeLettersAndNumbers,
-		defaultAnyChar:        MergeCharRangeArray(CharClassRangeLettersAndNumbers, CharClassNewLineLetter),
-		defaultWordBoundary:   CharClassRangeLettersAndNumbers,
-		defaultNoWordBoundary: CharClassEmptyChars,
+		defaultMaxRepeatCount: c.DefaultMaxRepeatCount,
+		defaultAnyCharNotNL:   c.DefaultAnyCharNotNL,
+		defaultAnyChar:        c.DefaultAnyChar,
 	}
 }
 
