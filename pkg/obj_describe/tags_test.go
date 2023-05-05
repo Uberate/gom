@@ -15,7 +15,7 @@ type TestObj struct {
 }
 
 type InnerObj struct {
-	SmallInt int    `max:"10" min:"0"`
+	SmallInt int8
 	TestName string `expr:"[a-z]{10}"`
 	BigInt   int    `min:"1000"`
 }

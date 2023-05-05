@@ -1,6 +1,7 @@
 package obj_describe
 
 import (
+	"math"
 	"reflect"
 	"strconv"
 )
@@ -92,30 +93,106 @@ func parseField(f reflect.StructField) (*FieldDescribe, error) {
 		}
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		res.Type = FieldTypeInt
+		maxInt := int64(math.MaxInt64)
 		if value, ok := f.Tag.Lookup(MaxTag); ok {
-			maxInt, err := strconv.ParseInt(value, 10, 64)
+			var err error
+			maxInt, err = strconv.ParseInt(value, 10, 64)
 			if err != nil {
 				return nil, err
 			}
-			res.MaxInt = &maxInt
 		}
+		switch f.Type.Kind() {
+		case reflect.Int:
+			if maxInt > math.MaxInt {
+				maxInt = math.MaxInt
+			}
+		case reflect.Int8:
+			if maxInt > math.MaxInt8 {
+				maxInt = math.MaxInt8
+			}
+		case reflect.Int16:
+			if maxInt > math.MaxInt16 {
+				maxInt = math.MaxInt16
+			}
+		case reflect.Int32:
+			if maxInt > math.MaxInt32 {
+				maxInt = math.MaxInt32
+			}
+		case reflect.Int64:
+			if maxInt > math.MaxInt64 {
+				maxInt = math.MaxInt64
+			}
+		}
+		res.MaxInt = &maxInt
+		minInt := int64(math.MinInt64)
 		if value, ok := f.Tag.Lookup(MinTag); ok {
-			minInt, err := strconv.ParseInt(value, 10, 64)
+			var err error
+			minInt, err = strconv.ParseInt(value, 10, 64)
 			if err != nil {
 				return nil, err
 			}
-			res.MinInt = &minInt
+
 		}
+		switch f.Type.Kind() {
+		case reflect.Int:
+			if minInt < math.MinInt {
+				minInt = math.MinInt
+			}
+		case reflect.Int8:
+			if minInt < math.MinInt8 {
+				minInt = math.MinInt8
+			}
+		case reflect.Int16:
+			if minInt < math.MinInt16 {
+				minInt = math.MinInt16
+			}
+		case reflect.Int32:
+			if minInt < math.MinInt32 {
+				minInt = math.MinInt32
+			}
+		case reflect.Int64:
+			if minInt < math.MinInt64 {
+				minInt = math.MinInt64
+			}
+		}
+		res.MinInt = &minInt
+
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		res.Type = FieldTypeInt
+		maxInt := int64(math.MaxInt64)
 		if value, ok := f.Tag.Lookup(MaxTag); ok {
-			maxInt, err := strconv.ParseInt(value, 10, 64)
+			var err error
+			maxInt, err = strconv.ParseInt(value, 10, 64)
 			if err != nil {
 				return nil, err
 			}
-			res.MaxInt = &maxInt
-			// todo: auto set max value by type
 		}
+
+		switch f.Type.Kind() {
+		case reflect.Uint:
+			if maxInt > math.MaxInt {
+				maxInt = math.MaxInt
+			}
+		case reflect.Uint8:
+			if maxInt > math.MaxInt8 {
+				maxInt = math.MaxInt8
+			}
+		case reflect.Uint16:
+			if maxInt > math.MaxInt16 {
+				maxInt = math.MaxInt16
+			}
+		case reflect.Uint32:
+			if maxInt > math.MaxInt32 {
+				maxInt = math.MaxInt32
+			}
+		case reflect.Uint64:
+			if maxInt > math.MaxInt64 {
+				maxInt = math.MaxInt64
+			}
+		}
+
+		res.MaxInt = &maxInt
+
 		if value, ok := f.Tag.Lookup(MinTag); ok {
 			minInt, err := strconv.ParseInt(value, 10, 64)
 			if err != nil {
@@ -140,7 +217,6 @@ func parseField(f reflect.StructField) (*FieldDescribe, error) {
 			if err != nil {
 				return nil, err
 			}
-			// todo: auto set max value by type
 			res.MinFloat = &minFloat
 		}
 	case reflect.String:
