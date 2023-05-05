@@ -44,9 +44,9 @@ func MergeCharRangeArray(a CharRangeArray, b ...CharRangeArray) CharRangeArray {
 			return CharRangeArray{}
 		} else {
 			if len(b) == 1 {
-				return b[0]
+				return b[0].Clone()
 			}
-			return MergeCharRangeArray(b[0], b[1:]...)
+			return MergeCharRangeArray(b[0].Clone(), b[1:]...)
 		}
 	}
 
