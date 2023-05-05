@@ -25,16 +25,6 @@ const (
 // FieldDescribe support the JSON-Data-Structure. JSON data type: number(int, float), string, bool, array and map. All
 // the structure in everywhere can be marshaled and unmarshalled by json.
 //
-// The field describe like this format:
-//
-// {
-//     "name": {
-//         "type": "field.type=int",
-//         "max-int": "123",
-//         "min-int": "0"
-//     }
-// }
-//
 // If some field is struct(in json data is map), it contains the SubFieldDescribes. And for array, has Elem.
 //
 // For now, the FieldDescribe can't describe the different elem structure in one array.
@@ -105,7 +95,7 @@ type fieldValueDescribe struct {
 	RandomStringSets []string `json:"random-string-sets,omitempty"`
 }
 
-func (fd *FieldDescribe) GenerateValue() (map[string]interface{}, error) {
+func (fd *FieldDescribe) GenerateValue() (interface{}, error) {
 
 	seed := time.Now().UnixNano()
 	if fd.RandomSeed != nil {
@@ -114,13 +104,10 @@ func (fd *FieldDescribe) GenerateValue() (map[string]interface{}, error) {
 
 	fd.ran = rand.New(rand.NewSource(seed))
 
-	res := map[string]interface{}{}
-
 	if fd.PointNilWeight != nil {
 		probability := fd.ran.Float64()
 		if probability < *fd.PointNilWeight {
-			res[fd.Name] = nil
-			return res, nil
+			return nil, nil
 		}
 	}
 
@@ -137,8 +124,7 @@ func (fd *FieldDescribe) GenerateValue() (map[string]interface{}, error) {
 			if fd.StringRegexExpression != nil {
 				expression = *fd.StringRegexExpression
 			}
-			var err error
-			res[fd.Name], err = fd.forceExpression(fd.Type, expression, seed, repeatCount)
+			res, err := fd.forceExpression(fd.Type, expression, seed, repeatCount)
 			if err != nil {
 				return nil, err
 			}
@@ -154,7 +140,7 @@ func (fd *FieldDescribe) GenerateValue() (map[string]interface{}, error) {
 			weight = *fd.BoolTrueWeight
 		}
 
-		res[fd.Name] = fd.ran.Float64() < weight
+		return fd.ran.Float64() < weight, nil
 	case FieldTypeInt:
 		max := int64(math.MaxInt)
 		min := int64(0)
@@ -168,7 +154,7 @@ func (fd *FieldDescribe) GenerateValue() (map[string]interface{}, error) {
 			return nil, fmt.Errorf("max value should less than(or equals of) min value, "+
 				"but max: [%d], min: [%d]", max, min)
 		}
-		res[fd.Name] = fd.ran.Int63n(max-min) + min
+		return fd.ran.Int63n(max-min) + min, nil
 	case FieldTypeFloat:
 		max := float64(math.MaxFloat32)
 		min := float64(0)
@@ -183,7 +169,7 @@ func (fd *FieldDescribe) GenerateValue() (map[string]interface{}, error) {
 			return nil, fmt.Errorf("max value should less than(or equals of) min value, "+
 				"but max: [%f], min: [%f]", max, min)
 		}
-		res[fd.Name] = math.Mod(fd.ran.NormFloat64(), max-min) + max
+		return math.Mod(fd.ran.NormFloat64(), max-min) + max, nil
 	case FieldTypeStruct:
 		sort.Slice(fd.SubFieldDescribes, func(i, j int) bool {
 			return strings.Compare(fd.SubFieldDescribes[i].Name, fd.SubFieldDescribes[j].Name) < 0
@@ -191,15 +177,14 @@ func (fd *FieldDescribe) GenerateValue() (map[string]interface{}, error) {
 
 		structRes := map[string]interface{}{}
 		for _, item := range fd.SubFieldDescribes {
-			subMap, err := item.GenerateValue()
+			subGenValue, err := item.GenerateValue()
 			if err != nil {
 				return nil, err
 			}
-			for key, value := range subMap {
-				structRes[key] = value
-			}
-			res[fd.Name] = structRes
+			structRes[item.Name] = subGenValue
+
 		}
+		return structRes, nil
 	case FieldTypeArray:
 		maxLength := 10
 		minLength := 0
@@ -233,8 +218,7 @@ func (fd *FieldDescribe) GenerateValue() (map[string]interface{}, error) {
 			}
 			arrayRes = append(arrayRes, arrGen)
 		}
-		res[fd.Name] = randomLength
-
+		return arrayRes, nil
 	case FieldTypeString:
 		if fd.StringRegexExpression != nil {
 			repeat := 10
@@ -248,15 +232,15 @@ func (fd *FieldDescribe) GenerateValue() (map[string]interface{}, error) {
 				return nil, err
 			}
 
-			res[fd.Name] = sgr
+			return sgr, nil
 		} else if fd.RandomStringSets != nil {
-			res[fd.Name] = fd.RandomStringSets[rand.Intn(len(fd.RandomStringSets))]
+			return fd.RandomStringSets[rand.Intn(len(fd.RandomStringSets))], nil
 		} else {
-			res[fd.Name] = ""
+			return "", nil
 		}
 	}
 
-	return res, nil
+	return nil, nil
 }
 
 func (fd *FieldDescribe) getStringGenerator(seed int64, repeat int) *regexp_trans.Generator {
