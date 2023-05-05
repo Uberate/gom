@@ -38,3 +38,9 @@ func AppendDefaultAnyChar(array ...CharRangeArray) GeneratorOpt {
 			array...)
 	}
 }
+
+func SetDefaultMaxRepeatCount(count int) GeneratorOpt {
+	return func(gc *GeneratorConfig) {
+		gc.DefaultMaxRepeatCount = count
+	}
+}
