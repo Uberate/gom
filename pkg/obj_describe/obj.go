@@ -199,7 +199,7 @@ func (fd *FieldDescribe) GenerateValue() (interface{}, error) {
 			minLength = 0
 		}
 
-		if maxLength > minLength {
+		if maxLength < minLength {
 			return nil, fmt.Errorf("max length of arrya should less than(or equals of) min length of array, "+
 				"but max: [%d], min: [%d]", maxLength, minLength)
 		}
