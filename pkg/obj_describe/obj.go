@@ -204,7 +204,10 @@ func (fd *FieldDescribe) GenerateValue() (interface{}, error) {
 				"but max: [%d], min: [%d]", maxLength, minLength)
 		}
 
-		randomLength := fd.ran.Intn(maxLength-minLength) + minLength
+		randomLength := minLength
+		if minLength != maxLength {
+			randomLength = fd.ran.Intn(maxLength-minLength) + minLength
+		}
 
 		var arrayRes []interface{}
 		for index := 0; index < randomLength; index++ {

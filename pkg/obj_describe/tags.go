@@ -18,16 +18,45 @@ const (
 	NullWeight            = "nweight"
 )
 
-func ParseStruct(obj interface{}) (*FieldDescribe, error) {
-	t := reflect.TypeOf(obj)
-	return parseType(t)
+type Parser struct {
+	NameTag            string
+	IgnoreTag          string
+	MaxTag             string
+	MinTag             string
+	ExprTag            string
+	ForceExpressionTag string
+	RepeatCountTag     string
+	TrueWeight         string
+	NullWeight         string
+
+	DefaultStringExpr string
 }
 
-func parseType(t reflect.Type) (*FieldDescribe, error) {
+func NewParser() *Parser {
+	return &Parser{
+		NameTag:            NameTag,
+		IgnoreTag:          IgnoreTag,
+		MaxTag:             MaxTag,
+		MinTag:             MinTag,
+		ExprTag:            ExpressionTag,
+		ForceExpressionTag: ForceExpressionTag,
+		RepeatCountTag:     ExpressionRepeatCount,
+		TrueWeight:         TrueWeight,
+		NullWeight:         NullWeight,
+		DefaultStringExpr:  "[a-zA-Z1-9-_.]*",
+	}
+}
+
+func (p *Parser) ParseStruct(obj interface{}) (*FieldDescribe, error) {
+	t := reflect.TypeOf(obj)
+	return p.parseType(t)
+}
+
+func (p *Parser) parseType(t reflect.Type) (*FieldDescribe, error) {
 	res := FieldDescribe{}
 	res.Type = FieldTypeStruct
 	for index := 0; index < t.NumField(); index++ {
-		item, err := parseField(t.Field(index))
+		item, err := p.parseField(t.Field(index))
 		if err != nil {
 			return nil, err
 		}
@@ -39,12 +68,12 @@ func parseType(t reflect.Type) (*FieldDescribe, error) {
 	return &res, nil
 }
 
-func parseField(f reflect.StructField) (*FieldDescribe, error) {
+func (p *Parser) parseField(f reflect.StructField) (*FieldDescribe, error) {
 	fName := f.Name
-	if value, ok := f.Tag.Lookup(NameTag); ok {
+	if value, ok := f.Tag.Lookup(p.NameTag); ok {
 		fName = value
 	}
-	if value, ok := f.Tag.Lookup(IgnoreTag); ok {
+	if value, ok := f.Tag.Lookup(p.IgnoreTag); ok {
 		isIgnore, err := strconv.ParseBool(value)
 		if err != nil {
 			isIgnore = true
@@ -56,24 +85,24 @@ func parseField(f reflect.StructField) (*FieldDescribe, error) {
 
 	res := FieldDescribe{}
 	res.Name = fName
-	if value, ok := f.Tag.Lookup(NullWeight); ok {
+	if value, ok := f.Tag.Lookup(p.NullWeight); ok {
 		weight, err := strconv.ParseFloat(value, 64)
 		if err != nil {
 			return nil, err
 		}
 		res.PointNilWeight = &weight
 	}
-	if value, ok := f.Tag.Lookup(ExpressionTag); ok {
+	if value, ok := f.Tag.Lookup(p.ExprTag); ok {
 		res.StringRegexExpression = &value
 	}
-	if value, ok := f.Tag.Lookup(ForceExpressionTag); ok {
+	if value, ok := f.Tag.Lookup(p.ForceExpressionTag); ok {
 		isForce, err := strconv.ParseBool(value)
 		if err != nil {
 			isForce = false
 		}
 		res.ForceGenerateByExpression = isForce
 	}
-	if value, ok := f.Tag.Lookup(ExpressionRepeatCount); ok {
+	if value, ok := f.Tag.Lookup(p.RepeatCountTag); ok {
 		rc, err := strconv.ParseInt(value, 10, 64)
 		if err != nil {
 			return nil, err
@@ -84,7 +113,7 @@ func parseField(f reflect.StructField) (*FieldDescribe, error) {
 	switch f.Type.Kind() {
 	case reflect.Bool:
 		res.Type = FieldTypeBool
-		if value, ok := f.Tag.Lookup(TrueWeight); ok {
+		if value, ok := f.Tag.Lookup(p.TrueWeight); ok {
 			weight, err := strconv.ParseFloat(value, 64)
 			if err != nil {
 				return nil, err
@@ -94,7 +123,7 @@ func parseField(f reflect.StructField) (*FieldDescribe, error) {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		res.Type = FieldTypeInt
 		maxInt := int64(math.MaxInt64)
-		if value, ok := f.Tag.Lookup(MaxTag); ok {
+		if value, ok := f.Tag.Lookup(p.MaxTag); ok {
 			var err error
 			maxInt, err = strconv.ParseInt(value, 10, 64)
 			if err != nil {
@@ -125,7 +154,7 @@ func parseField(f reflect.StructField) (*FieldDescribe, error) {
 		}
 		res.MaxInt = &maxInt
 		minInt := int64(math.MinInt64)
-		if value, ok := f.Tag.Lookup(MinTag); ok {
+		if value, ok := f.Tag.Lookup(p.MinTag); ok {
 			var err error
 			minInt, err = strconv.ParseInt(value, 10, 64)
 			if err != nil {
@@ -160,7 +189,7 @@ func parseField(f reflect.StructField) (*FieldDescribe, error) {
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		res.Type = FieldTypeInt
 		maxInt := int64(math.MaxInt64)
-		if value, ok := f.Tag.Lookup(MaxTag); ok {
+		if value, ok := f.Tag.Lookup(p.MaxTag); ok {
 			var err error
 			maxInt, err = strconv.ParseInt(value, 10, 64)
 			if err != nil {
@@ -193,7 +222,7 @@ func parseField(f reflect.StructField) (*FieldDescribe, error) {
 
 		res.MaxInt = &maxInt
 
-		if value, ok := f.Tag.Lookup(MinTag); ok {
+		if value, ok := f.Tag.Lookup(p.MinTag); ok {
 			minInt, err := strconv.ParseInt(value, 10, 64)
 			if err != nil {
 				return nil, err
@@ -205,14 +234,14 @@ func parseField(f reflect.StructField) (*FieldDescribe, error) {
 		}
 	case reflect.Float64, reflect.Float32:
 		res.Type = FieldTypeFloat
-		if value, ok := f.Tag.Lookup(MaxTag); ok {
+		if value, ok := f.Tag.Lookup(p.MaxTag); ok {
 			maxFloat, err := strconv.ParseFloat(value, 64)
 			if err != nil {
 				return nil, err
 			}
 			res.MaxFloat = &maxFloat
 		}
-		if value, ok := f.Tag.Lookup(MinTag); ok {
+		if value, ok := f.Tag.Lookup(p.MinTag); ok {
 			minFloat, err := strconv.ParseFloat(value, 64)
 			if err != nil {
 				return nil, err
@@ -221,9 +250,12 @@ func parseField(f reflect.StructField) (*FieldDescribe, error) {
 		}
 	case reflect.String:
 		res.Type = FieldTypeString
+		if res.StringRegexExpression == nil {
+			res.StringRegexExpression = &p.DefaultStringExpr
+		}
 	case reflect.Array, reflect.Slice:
 		res.Type = FieldTypeArray
-		if value, ok := f.Tag.Lookup(MaxTag); ok {
+		if value, ok := f.Tag.Lookup(p.MaxTag); ok {
 			maxLength, err := strconv.ParseInt(value, 10, 64)
 			if err != nil {
 				return nil, err
@@ -231,7 +263,7 @@ func parseField(f reflect.StructField) (*FieldDescribe, error) {
 			maxLengthInt := int(maxLength)
 			res.MaxArrayLength = &maxLengthInt
 		}
-		if value, ok := f.Tag.Lookup(MinTag); ok {
+		if value, ok := f.Tag.Lookup(p.MinTag); ok {
 			minLength, err := strconv.ParseInt(value, 10, 64)
 			if err != nil {
 				return nil, err
@@ -249,7 +281,7 @@ func parseField(f reflect.StructField) (*FieldDescribe, error) {
 		}
 
 		var err error
-		res.Elem, err = parseType(t)
+		res.Elem, err = p.parseType(t)
 		if err != nil {
 			return nil, err
 		}
@@ -262,7 +294,7 @@ func parseField(f reflect.StructField) (*FieldDescribe, error) {
 			t = t.Elem()
 		}
 
-		r, err := parseType(t)
+		r, err := p.parseType(t)
 		if err != nil {
 			return nil, err
 		}
