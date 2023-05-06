@@ -32,7 +32,7 @@ func tryMatch(count int, value string) {
 			fmt.Println(err)
 		}
 
-		p := NewGenerator()
+		p := NewGenerator(SetSeedByNotTime)
 
 		res, _ := p.Generate(value)
 		fmt.Print(res, " ")

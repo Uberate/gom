@@ -114,11 +114,27 @@ func MergeCharRangeArray(a CharRangeArray, b ...CharRangeArray) CharRangeArray {
 // RandomRangeChar will generate specif count char in a range.
 func RandomRangeChar(ran *rand.Rand, charClasses CharRangeArray, count int) []rune {
 	res := make([]rune, count, count)
+	totalCount := int32(0)
+	var indexCache []int32
+	for _, item := range charClasses {
+		totalCount += (item[1] - item[0]) + 1
+		indexCache = append(indexCache, totalCount)
+	}
+	for i := 0; i < count; i++ {
+		randIndex := ran.Int31n(totalCount) + 1
+		realIndex := 0
+		lastValue := int32(0)
+		for ; realIndex < len(indexCache); realIndex++ {
+			if randIndex <= indexCache[realIndex] {
+				break
+			}
+			lastValue = indexCache[realIndex]
+		}
 
-	for index := 0; index < count; index++ {
-		sliceRandIndex := ran.Intn(len(charClasses))
-		length := charClasses[sliceRandIndex][1] - charClasses[sliceRandIndex][0] + 1
-		res[index] = charClasses[sliceRandIndex][0] + int32(ran.Int63n(int64(length)))
+		if realIndex == len(indexCache) {
+			realIndex--
+		}
+		res[i] = charClasses[realIndex][0] + (randIndex - lastValue - int32(1))
 	}
 
 	return res
