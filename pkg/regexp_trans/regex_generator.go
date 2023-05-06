@@ -132,6 +132,9 @@ func (p *Generator) parse(regexp *syntax.Regexp) ([]byte, error) {
 }
 
 func (p *Generator) generateRepeats(sub *syntax.Regexp, max, min int) ([]byte, error) {
+	if (max - min) <= 0 {
+		return []byte{}, nil
+	}
 	ranRepeatCount := p.ran.Intn(max-min+1) + min
 	res := bytes.Buffer{}
 	for ; ranRepeatCount > 0; ranRepeatCount-- {

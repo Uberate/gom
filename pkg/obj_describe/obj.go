@@ -169,7 +169,7 @@ func (fd *FieldDescribe) GenerateValue() (interface{}, error) {
 			return nil, fmt.Errorf("max value should less than(or equals of) min value, "+
 				"but max: [%f], min: [%f]", max, min)
 		}
-		return math.Mod(fd.ran.NormFloat64(), max-min) + max, nil
+		return math.Mod(math.Abs(fd.ran.NormFloat64()), max-min) + min, nil
 	case FieldTypeStruct:
 		sort.Slice(fd.SubFieldDescribes, func(i, j int) bool {
 			return strings.Compare(fd.SubFieldDescribes[i].Name, fd.SubFieldDescribes[j].Name) < 0

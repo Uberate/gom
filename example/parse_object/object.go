@@ -8,6 +8,6 @@ type Human struct {
 
 type Student struct {
 	Age   uint8  `json:"age" min:"6" max:"30"`
-	Email string `json:"email" expr:"^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$"`
+	Email string `json:"email" expr:"^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$" expr-rc:"0"`
 	Human `json:"human"`
 }
