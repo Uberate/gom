@@ -106,7 +106,16 @@ func (p *Generator) parse(regexp *syntax.Regexp) ([]byte, error) {
 		}
 		res.Write(r)
 	case syntax.OpRepeat: //{}
-		r, err := p.generateRepeats(regexp.Sub0[0], regexp.Max, regexp.Min)
+		min := regexp.Min
+		max := regexp.Max
+		if max == -1 {
+			if min > p.defaultMaxRepeatCount {
+				max = min + 1
+			} else {
+				max = p.defaultMaxRepeatCount
+			}
+		}
+		r, err := p.generateRepeats(regexp.Sub0[0], max, min)
 		if err != nil {
 			return nil, err
 		}

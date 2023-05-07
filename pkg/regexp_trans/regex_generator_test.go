@@ -12,6 +12,7 @@ func TestGenerator_Generate(t *testing.T) {
 	name := "[\u4e00-\u9fa5]{2,4}"
 	email := "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$"
 	idCard := "[1-9]\\d{5}(19|20)\\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\\d{3}[0-9Xx]"
+	commonSet := "[a-z]{2,}"
 
 	fmt.Println("--- phone")
 	tryMatch(10, phone)
@@ -23,6 +24,8 @@ func TestGenerator_Generate(t *testing.T) {
 	tryMatch(10, email)
 	fmt.Println("--- idCard")
 	tryMatch(10, idCard)
+	fmt.Println("--- commonSet")
+	tryMatch(10, commonSet)
 }
 
 func tryMatch(count int, value string) {
