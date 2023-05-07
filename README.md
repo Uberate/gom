@@ -53,6 +53,8 @@ go get -u github.com/uberate/gom
 import "github.com/uberate/gom/pkg/obj_describe"
 ```
 
+更多信息请移步：[example](./example)
+
 ## 4. 构建
 
 有关构建请移步：[构建 GOM](./docs/zhcn/build.md)
