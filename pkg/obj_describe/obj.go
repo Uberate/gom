@@ -2,7 +2,7 @@ package obj_describe
 
 import (
 	"fmt"
-	"gom/pkg/regexp_trans"
+	"github.com/uberate/gom/pkg/regexp_trans"
 	"math"
 	"math/rand"
 	"sort"

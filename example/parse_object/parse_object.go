@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"gom/pkg/obj_describe"
+	"github.com/uberate/gom/pkg/obj_describe"
 )
 
 func main() {
