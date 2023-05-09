@@ -2,6 +2,14 @@ package bc
 
 import "time"
 
+var DefaultConfigDescribePrefix = `# ----------------------------------
+# File name: default-web.config.yaml
+#
+# This file is default config of GOM
+#
+
+`
+
 // DefaultConfig generate a default ApplicationConfig.
 func DefaultConfig() ApplicationConfig {
 	return ApplicationConfig{

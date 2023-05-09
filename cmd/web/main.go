@@ -37,7 +37,7 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-
+		fmt.Print(bc.DefaultConfigDescribePrefix)
 		fmt.Println(string(configYamlValue))
 		os.Exit(0)
 	}
