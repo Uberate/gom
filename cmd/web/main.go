@@ -13,7 +13,7 @@ import (
 
 // main function will bootstrap the application
 func main() {
-	println("init done")
+
 }
 
 var configInstance *bc.ApplicationConfig

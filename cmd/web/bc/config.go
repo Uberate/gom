@@ -21,12 +21,18 @@ func DefaultConfig() ApplicationConfig {
 			FullTimestamp:             true,
 			TimestampFormat:           time.RFC3339Nano,
 		},
+		Web: WebConfig{
+			Host:       "0.0.0.0",
+			ListenPort: "3000",
+			DebugMode:  false,
+		},
 	}
 }
 
 // ApplicationConfig define the config of application.
 type ApplicationConfig struct {
 	Log LogConfig `json:"log" yaml:"log" mapstructure:"log"`
+	Web WebConfig `json:"web" yaml:"web"`
 }
 
 // LogConfig about the config of log for app.
@@ -53,4 +59,10 @@ type LogConfig struct {
 	// library.
 	// The standard Library already provides a set of predefined format.
 	TimestampFormat string `json:"timestamp-format,omitempty" yaml:"timestamp-format"`
+}
+
+type WebConfig struct {
+	Host       string `json:"host,omitempty" yaml:"host"`
+	ListenPort string `json:"listen-port,omitempty" yaml:"listen-port"`
+	DebugMode  bool   `json:"debug-mode,omitempty" yaml:"debug-mode"`
 }
