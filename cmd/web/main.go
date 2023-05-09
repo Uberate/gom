@@ -28,8 +28,8 @@ func init() {
 			"show the default config, this flags will stop the process.")
 		// If none env setting, parse flag.
 		flag.StringVar(&configPath, "config", "./conf/web.conf.yaml", "--config config-path or set env OM_CONFIG_PATH")
-		flag.Parse()
 	}
+	flag.Parse()
 
 	if showDefaultConfig {
 		c := bc.DefaultConfig()
