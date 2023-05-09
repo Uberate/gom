@@ -7,6 +7,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 	"github.com/uberate/gom/cmd/web/bc"
+	"gopkg.in/yaml.v3"
 	"os"
 )
 
@@ -18,14 +19,27 @@ func main() {
 var configInstance *bc.ApplicationConfig
 
 func init() {
+	showDefaultConfig := false
 
 	// init config info
 	configPath := os.Getenv("OM_CONFIG_PATH")
 	if len(configPath) == 0 {
-
+		flag.BoolVar(&showDefaultConfig, "show-default-config", false, "--show-default-config to "+
+			"show the default config, this flags will stop the process.")
 		// If none env setting, parse flag.
 		flag.StringVar(&configPath, "c", "./conf/web.conf.yaml", "-c config-path or set env OM_CONFIG_PATH")
 		flag.Parse()
+	}
+
+	if showDefaultConfig {
+		c := bc.DefaultConfig()
+		configYamlValue, err := yaml.Marshal(c)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println(string(configYamlValue))
+		os.Exit(0)
 	}
 
 	if len(configPath) == 0 {
