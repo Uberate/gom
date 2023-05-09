@@ -27,7 +27,7 @@ func init() {
 		flag.BoolVar(&showDefaultConfig, "show-default-config", false, "--show-default-config to "+
 			"show the default config, this flags will stop the process.")
 		// If none env setting, parse flag.
-		flag.StringVar(&configPath, "c", "./conf/web.conf.yaml", "-c config-path or set env OM_CONFIG_PATH")
+		flag.StringVar(&configPath, "config", "./conf/web.conf.yaml", "--config config-path or set env OM_CONFIG_PATH")
 		flag.Parse()
 	}
 
