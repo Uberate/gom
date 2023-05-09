@@ -69,6 +69,7 @@ func init() {
 	}
 
 	bc.LoggerInstance.Info(string(versionJsonBytes))
+	bc.LoggerInstance.Info("init applicaiton done")
 }
 
 func parseConfig(configPath string) (*bc.ApplicationConfig, error) {
