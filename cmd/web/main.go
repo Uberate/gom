@@ -7,13 +7,16 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 	"github.com/uberate/gom/cmd/web/bc"
+	"github.com/uberate/gom/internal/web"
 	"gopkg.in/yaml.v3"
 	"os"
 )
 
 // main function will bootstrap the application
 func main() {
-
+	if err := web.RunE(*configInstance, bc.LoggerInstance, GetVersionInfo()); err != nil {
+		panic(err)
+	}
 }
 
 var configInstance *bc.ApplicationConfig

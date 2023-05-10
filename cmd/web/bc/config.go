@@ -22,9 +22,10 @@ func DefaultConfig() ApplicationConfig {
 			TimestampFormat:           time.RFC3339Nano,
 		},
 		Web: WebConfig{
-			Host:       "0.0.0.0",
-			ListenPort: "3000",
-			DebugMode:  false,
+			Host:         "0.0.0.0",
+			Port:         "3000",
+			Mode:         "release",
+			EnableWebLog: true,
 		},
 	}
 }
@@ -62,7 +63,8 @@ type LogConfig struct {
 }
 
 type WebConfig struct {
-	Host       string `json:"host,omitempty" yaml:"host"`
-	ListenPort string `json:"listen-port,omitempty" yaml:"listen-port"`
-	DebugMode  bool   `json:"debug-mode,omitempty" yaml:"debug-mode"`
+	Host         string `json:"host,omitempty" yaml:"host"`
+	Port         string `json:"port,omitempty" yaml:"port"`
+	Mode         string `json:"mode,omitempty" yaml:"mode"`
+	EnableWebLog bool   `json:"enable-web-log" yaml:"enable-web-log"`
 }
